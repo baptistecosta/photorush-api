@@ -9,69 +9,11 @@ var routes = require('./routes');
 var user = require('./routes/user');
 var mysql = require('mysql');
 
-/*
-var Sequelize = require("sequelize");
-var sequelize = new Sequelize("photorush", "root", "", {
-	dialect: "mysql",
-	port: 3306,
-	define: {
-		underscored: true,
-		timestamps: false
-	}
-});
-sequelize.authenticate().complete(function(err) {
-	if (!!err) {
-		console.log('Unable to connect to the database:', err)
-	} else {
-		console.log('Connection has been established successfully.')
-	}
-});
-
-var User = sequelize.define('User', {
-	status: Sequelize.ENUM("admin", "regular", "temp"),
-	inscription_date: Sequelize.DATE,
-	email: Sequelize.STRING(64),
-	gender: Sequelize.ENUM("male", "female"),
-	username: Sequelize.STRING(16),
-	password: Sequelize.STRING(32),
-	gold: Sequelize.INTEGER
-}, {
-	tableName: "users"
-});
-
-var Pix = sequelize.define('Pix', {
-	locale: Sequelize.ENUM("ww", "en", "fr"),
-	date: Sequelize.DATE,
-	user_id: Sequelize.INTEGER,
-	category_id: Sequelize.INTEGER,
-	trap_answer_1: Sequelize.STRING(64),
-	trap_answer_2: Sequelize.STRING(64),
-	trap_answer_3: Sequelize.STRING(64),
-	correct_answer: Sequelize.STRING(64),
-	pos_answers: Sequelize.INTEGER,
-	neg_answers: Sequelize.INTEGER,
-	is_suspended: Sequelize.BOOLEAN
-}, {
-	tableName: "pixes"
-});
-
-var PixCategory = sequelize.define("PixCategory", {
-	en: Sequelize.STRING(32),
-	fr: Sequelize.STRING(32)
-}, {
-	tableName: "categories"
-});
-
-Pix.belongsTo(User);
-Pix.belongsTo(PixCategory);
-PixCategory.hasMany(Pix);
-User.hasMany(Pix);*/
-
-
 var app = express();
 // all environments
 app.use(function (req, res, next) {
 	res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+	res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	next();
 });
 app.set('port', process.env.PORT || 3030);
@@ -79,9 +21,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
 app.use(express.logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(express.bodyParser());
+app.use(express.bodyParser({
+	keepExtensions: true,
+	uploadDir: path.join(__dirname, "uploads")
+}));
 app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
@@ -165,8 +108,9 @@ app.get("/pix/:id", function(req, res) {
 		res.json({pix: pix});
 	});
 });
-app.post("pix", function() {
-	console.log(req.body);
+app.post("/pix", function(req, res) {
+	console.log("file name", req.files);
+	res.send("done");
 });
 app.get("/pixes", function(req, res) {
 	Pixes.forge().fetch().then(function(pixes) {
