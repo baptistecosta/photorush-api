@@ -4,10 +4,15 @@
 
 var express = require('express');
 var http = require('http');
+var fs = require('fs');
+var crypto = require('crypto');
 var path = require('path');
 var routes = require('./routes');
 var user = require('./routes/user');
 var mysql = require('mysql');
+
+var imagemagick = require("imagemagick");
+var spawn = require('child_process').spawn;
 
 var app = express();
 // all environments
@@ -22,8 +27,8 @@ app.set('view engine', 'jade');
 app.use(express.favicon());
 app.use(express.logger('dev'));
 app.use(express.bodyParser({
-	keepExtensions: true,
-	uploadDir: path.join(__dirname, "uploads")
+//	keepExtensions: true,
+//	uploadDir: path.join(__dirname, "uploads")
 }));
 app.use(express.methodOverride());
 app.use(app.router);
@@ -109,8 +114,39 @@ app.get("/pix/:id", function(req, res) {
 	});
 });
 app.post("/pix", function(req, res) {
-	console.log("file name", req.files);
-	res.send("done");
+	console.log(req.files);
+	console.log(req.files.file.path);
+	console.log(req.files.file.type);
+
+//	var id = crypto.randomBytes(32).toString("hex");
+	var id = "ouuch";
+	var extension = ".jpg";
+
+	var destPath = path.join(__dirname, "public/images/pixes/" + id + extension);
+	var resizedPath = path.join(__dirname, "public/images/pixes/" + id + "-512" + extension)
+	var source = fs.createReadStream(req.files.file.path);
+	var dest = fs.createWriteStream(destPath);
+
+	console.log("copy");
+
+	source.pipe(dest);
+	source.on("end", function() {
+		// Resize
+		console.log("resize");
+
+		var childProcess = require('child_process');
+		var command = '"C:\\Program Files\\ImageMagick-6.8.8-Q8\\convert" ' + destPath + ' -resize 512x512 ' + resizedPath;
+		var convert = childProcess.exec(command, function(err, stdout, stderr) {
+			console.log(err);
+			console.log(stdout);
+			console.log(stderr);
+			res.send("done");
+		});
+	});
+	source.on("error", function(err) {
+		console.log(err);
+		res.send("error");
+	});
 });
 app.get("/pixes", function(req, res) {
 	Pixes.forge().fetch().then(function(pixes) {
