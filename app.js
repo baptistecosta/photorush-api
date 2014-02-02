@@ -11,9 +11,6 @@ var routes = require('./routes');
 var user = require('./routes/user');
 var mysql = require('mysql');
 
-var imagemagick = require("imagemagick");
-var spawn = require('child_process').spawn;
-
 var app = express();
 // all environments
 app.use(function (req, res, next) {
