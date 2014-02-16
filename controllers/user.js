@@ -1,21 +1,37 @@
-var User = require("../models/user");
+var User = require("../models/user"),
+	Users = require("../models/users");
 
 /**
  * User controller
  * @author Baptiste Costa
  */
 module.exports = function() {
-	this.User = new User();
+
 };
 
-module.exports.prototype = {
-	get: function (req, res) {
-		if (req.secure) {
-			this.User.get(req.params.id, function(user) {
-				res.json({user: user});
-			});
-		} else {
-			res.redirect("https://127.0.0.1" + req.url);
-		}
+module.exports.prototype.get = function(req, res) {
+	var opts = {
+		withRelated: req.query.deep ? ['pix.pix_category'] : []
+	};
+	if (req.params.id) {
+		User.get(req.params.id, opts, function(user) {
+			res.json(user);
+		});
+	} else {
+		Users.get(opts, function(users) {
+			res.json(users);
+		});
 	}
-}
+};
+
+module.exports.prototype.queryOne = function(req, res) {
+	User.query(req.body, function(user) {
+		res.json(user);
+	});
+};
+
+module.exports.prototype.queryAll = function(req, res) {
+	Users.query(req.body, function(data) {
+		res.json(data);
+	});
+};

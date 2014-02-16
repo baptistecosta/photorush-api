@@ -4,14 +4,14 @@ var PixCategory = require("../models/pix_category");
  * Pix category controller
  * @author Baptiste Costa
  */
-module.exports = function() {
-	this.PixCategory = new PixCategory();
-};
-
-module.exports.prototype = {
+module.exports = {
 	get: function (req, res) {
-		this.PixCategory.get(req.params.id, function(pixCategory) {
-			res.json({pixCategory: pixCategory});
+		PixCategory.forge({
+			id: req.params.id
+		}).fetch({
+			withRelated: ['pix']
+		}).then(function(pixCategory) {
+			res.json(pixCategory);
 		});
 	}
-}
+};
