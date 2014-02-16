@@ -1,8 +1,11 @@
+var UserController = require("../controllers/user");
 
-/*
- * GET users listing.
+/**
+ * User routes
+ * @author Baptiste Costa
  */
-
-exports.list = function(req, res){
-  res.send("respond with a resource");
+module.exports = function(app) {
+	app.get("/user/:id", function(req, res) {
+		new UserController().get(req, res);
+	});
 };

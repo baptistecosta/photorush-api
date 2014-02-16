@@ -1,32 +1,26 @@
-/**
- * Module dependencies.
- */
-
 var express = require('express');
-var http = require('http');
 var fs = require('fs');
 var crypto = require('crypto');
 var path = require('path');
 var routes = require('./routes');
 var user = require('./routes/user');
-var mysql = require('mysql');
+var https = require("https");
 
-var app = express();
+var app = exports.app = express();
+
 // all environments
 app.use(function (req, res, next) {
 	res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 	res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	next();
 });
-app.set('port', process.env.PORT || 3030);
+app.set('port', process.env.PORT || 3000);
+app.set('portSSL', 443);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
 app.use(express.logger('dev'));
-app.use(express.bodyParser({
-//	keepExtensions: true,
-//	uploadDir: path.join(__dirname, "uploads")
-}));
+app.use(express.bodyParser({/*keepExtensions: true, uploadDir: path.join(__dirname, "uploads")*/}));
 app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
@@ -36,6 +30,13 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
+app.get("/", routes.index);
+
+require("./routes/user")(app);
+require("./routes/pix")(app);
+require("./routes/pix_category")(app);
+
+/*
 var Bookshelf = require("bookshelf");
 Bookshelf.db = Bookshelf.initialize({
 	"client": "mysql",
@@ -47,48 +48,9 @@ Bookshelf.db = Bookshelf.initialize({
 //		charset: "utf8"
 	}
 });
+*/
 
-var User = Bookshelf.db.Model.extend({
-	tableName: "users",
-	pix: function() {
-		return this.hasMany(Pix);
-	}
-});
-var Users = Bookshelf.db.Collection.extend({
-	model: User
-});
-
-var Pix = Bookshelf.db.Model.extend({
-	tableName: "pixes",
-	pix_category: function() {
-		return this.belongsTo(PixCategory);
-	}
-});
-var Pixes = Bookshelf.db.Collection.extend({
-	model: Pix
-});
-
-var PixCategory = Bookshelf.db.Model.extend({
-	tableName: "categories"
-});
-var PixCategories = Bookshelf.db.Collection.extend({
-	model: PixCategory
-});
-
-app.get("/", routes.index);
-
-app.get("/user/:id", function(req, res) {
-	User.forge({id: req.params.id}).fetch().then(function(user) {
-		res.json({user: user});
-	});
-});
-app.get("/userDeep/:id", function(req, res) {
-	User.forge({id: req.params.id}).fetch({
-		withRelated: ["pix.pix_category"]
-	}).then(function(user) {
-		res.json({user: user});
-	});
-});
+/*
 
 app.get("/users", function(req, res) {
 	Users.forge().fetch().then(function(users) {
@@ -165,8 +127,14 @@ app.get("/pixCategories/:locale(en|fr)?", function(req, res) {
 	}).then(function(pixCategories) {
 		res.json({pixCategories: pixCategories});
 	});
-});
+});*/
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+https.createServer({
+	key: fs.readFileSync(path.join(__dirname, "ssl/server.key")),
+	cert: fs.readFileSync(path.join(__dirname, "ssl/server.crt")),
+	ca: fs.readFileSync(path.join(__dirname, "ssl/ca.crt")),
+	requestCert: true,
+	rejectUnauthorized: false
+}, app).listen(443, function() {
+	console.log("Secured PhotoRush API server listening on port 443");
 });
