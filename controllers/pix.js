@@ -1,5 +1,7 @@
-var Pix = require("../models/pix");
-var Pixes = require("../models/pixes");
+var fs = require('fs'),
+	path = require('path'),
+	Pix = require("../models/pix"),
+	Pixes = require("../models/pixes");
 
 /**
  * Pix controller
@@ -24,16 +26,17 @@ module.exports = {
 		}
 	},
 	add: function(req, res) {
-		console.log(req.files);
+//		console.log(req.files);
+		console.log(req.body);
 		console.log(req.files.file.path);
 		console.log(req.files.file.type);
 
 //		var id = crypto.randomBytes(32).toString("hex");
-		var id = "ouuch";
+		var id = "ouch";
 		var extension = ".jpg";
 
-		var destPath = path.join(__dirname, "public/images/pixes/" + id + extension);
-		var resizedPath = path.join(__dirname, "public/images/pixes/" + id + "-512" + extension)
+		var destPath = "./public/images/pixes/" + id + extension;
+		var resizedPath = "./public/images/pixes/" + id + "-512" + extension
 		var source = fs.createReadStream(req.files.file.path);
 		var dest = fs.createWriteStream(destPath);
 

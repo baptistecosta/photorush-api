@@ -24,7 +24,7 @@ module.exports.build = function(app) {
 	/**
 	 * Pix category routes
 	 */
-	app.get("/pix_category/:id", PixCategoryController.get);
+	app.get("/pix_category/:id?", PixCategoryController.get);
 
 	/**
 	 * User routes
